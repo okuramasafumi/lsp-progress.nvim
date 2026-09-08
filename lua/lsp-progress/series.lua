@@ -14,15 +14,24 @@ local SeriesFormat = nil
 --- @field private _formatting boolean
 local Series = {}
 
+--- @param value any
+--- @return any|nil
+local function _normalize_nil(value)
+    if value == vim.NIL then
+        return nil
+    end
+    return value
+end
+
 --- @param title string?
 --- @param message string?
 --- @param percentage integer?
 --- @return lsp_progress.Series
 function Series:new(title, message, percentage)
     local o = {
-        title = title,
-        message = message,
-        percentage = percentage,
+        title = _normalize_nil(title),
+        message = _normalize_nil(message),
+        percentage = _normalize_nil(percentage),
         done = false,
         _format_cache = nil,
         _formatting = false,
@@ -75,6 +84,7 @@ end
 --- @param new_message string?
 --- @return string?
 local function _choose_updated_message(old_message, new_message)
+    new_message = _normalize_nil(new_message)
     -- if the 'new' message is nil, it usually means the lifecycle of this message series is going to end.
     -- thus we can decay the latest visible 'old' message for user.
     if type(new_message) == "string" and string.len(new_message) > 0 then
@@ -88,7 +98,7 @@ end
 --- @param percentage integer
 function Series:update(message, percentage)
     self.message = _choose_updated_message(self.message, message)
-    self.percentage = percentage
+    self.percentage = _normalize_nil(percentage)
     self:_format()
     -- logger.debug("|series - Series:update| update: %s", vim.inspect(self))
 end

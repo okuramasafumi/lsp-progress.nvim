@@ -31,6 +31,23 @@ describe("series", function()
             assert_eq(ss.message, "message")
             assert_eq(ss.percentage, 10)
         end)
+        it("normalizes vim.NIL fields", function()
+            series.setup(function(title, message, percentage, done)
+                assert_eq(title, "title")
+                assert_eq(message, nil)
+                assert_eq(percentage, nil)
+                assert_false(done)
+                return "formatted"
+            end)
+
+            local ss = series.Series:new("title", vim.NIL, vim.NIL)
+            assert_eq(ss.title, "title")
+            assert_eq(ss.message, nil)
+            assert_eq(ss.percentage, nil)
+            assert_eq(ss:format_result(), "formatted")
+
+            series.setup(series_formatter)
+        end)
         it("_format", function()
             local ss = series.Series:new("title", "message", 10)
             assert_eq(type(ss), "table")
@@ -152,6 +169,10 @@ describe("series", function()
             )
             assert_eq(
                 series._choose_updated_message("asdfasdf", nil),
+                "asdfasdf"
+            )
+            assert_eq(
+                series._choose_updated_message("asdfasdf", vim.NIL),
                 "asdfasdf"
             )
         end)
